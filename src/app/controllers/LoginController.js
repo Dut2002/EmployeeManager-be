@@ -12,7 +12,6 @@ class LoginController {
     // [Post] /login
     login(req, res) {
         const {username, password} = req.body;
-        console.log(username + " " + password);
         // Check if username and password are valid
         accountService.isValidUser(username, password)
             .then(result => {
