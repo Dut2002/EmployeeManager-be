@@ -1,29 +1,35 @@
-const {Account} = require('../models');
+const { Account } = require('../models');
 
 class AccountService {
-    
-    async getAccounts() {
+
+    async getAccounts(req) {
         try {
-            const users = await Account.findAll();
-            return users
+            if (req.query.hasOwnProperty('_sort')) {
+                const {column, type} = req.query
+                return await Account.findAll({
+                    order: [[column, type]],
+                });
+            }
+            return await Account.findAll();;
         } catch (err) {
-            console.log('Db not  connected  successfully', err);
+            console.log('Db not connected successfully', err);
             throw err;
         }
     }
 
+
     async isValidUser(username, password) {
         try {
-            const users = await Account.findAll({ 
+            const users = await Account.findAll({
                 where: {
-                    username: username, 
+                    username: username,
                     password: password
-                } 
+                }
             });
-            if(users.length>0){
-                return {valid: true, role: users.roleId};
+            if (users.length > 0) {
+                return { valid: true, role: users.roleId };
             } else {
-                return {valid: false};
+                return { valid: false };
             }
         } catch (err) {
             console.log('Db not  connected  successfully', err);

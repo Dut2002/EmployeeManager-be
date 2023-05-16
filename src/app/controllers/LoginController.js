@@ -11,7 +11,8 @@ class LoginController {
 
     // [Post] /login
     login(req, res) {
-        const { username, password } = req.body;
+        const {username, password} = req.body;
+        console.log(username + " " + password);
         // Check if username and password are valid
         accountService.isValidUser(username, password)
             .then(result => {
@@ -22,13 +23,13 @@ class LoginController {
                     const token = jwt.sign(payload, secretKey, options);
 
                     // Send the JWT back to the client
-                    res.json({ token });
+                    return res.json({ token });
                 } else {
-                    res.status(401).json({ message: 'Invalid username or password' });
+                    return res.status(401).json({ message: 'Invalid username or password' });
                 }
             })
             .catch(err => {
-                res.status(500).json({ error: 'Server error' });
+                return res.status(500).json({ error: 'Server error' });
             });
     }
 

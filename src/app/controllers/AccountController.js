@@ -4,17 +4,13 @@ class AccountController {
 
   // [Get] /account
   index(req, res) {
-    accountService.getAccounts()
-      .then(result => {
-        if(result.length > 0){
-          res.json(result);
-        }else{
-          res.status(204).json({message: "No Result"})
-        }
+    accountService.getAccounts(req)
+      .then(result => {        
+        return res.json(result);
       })
-      .catch((err) => {
-        res.status(500).json({ error: 'Server error' });
-      });
+      .catch(err => {
+        return res.status(500).json({ error: 'Server error' });
+      })
   }
 }
 
