@@ -11,13 +11,13 @@ class LoginController {
 
     // [Post] /login
     login(req, res) {
-        const {username, password} = req.body;
+        const {email, password} = req.body;
         // Check if username and password are valid
-        accountService.isValidUser(username, password)
+        accountService.isValidUser(email, password)
             .then(result => {
                 if (result.valid) {
                     // Create a new JWT for the user
-                    const payload = { username: username, role: result.role };
+                    const payload = { email: email, role: result.role };
                     const options = {};
                     const token = jwt.sign(payload, secretKey, options);
 

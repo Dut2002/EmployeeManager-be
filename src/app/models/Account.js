@@ -1,12 +1,12 @@
 module.exports = (sequelize, DataTypes) => { 
     const Account = sequelize.define("Account", {
-        username: {
+        email: {
             type: DataTypes.STRING,
             primaryKey: true,
             unique: true,
             allowNull: false,
             validate: {
-                notEmpty: true,
+                isEmail: true
             }
         },
         password: {
@@ -40,6 +40,5 @@ module.exports = (sequelize, DataTypes) => {
         Account.belongsTo(models.Student, { foreignKey: 'studentId' });
         Account.belongsTo(models.Teacher, { foreignKey: 'teacherId' });
     };
-
     return Account;
 }

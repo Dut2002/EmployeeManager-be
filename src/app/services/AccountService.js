@@ -1,33 +1,22 @@
-const { Account } = require('../models');
+const { Account, Role, Student } = require('../models');
 
 class AccountService {
 
-    async getAccounts(req) {
+    async isValidUser(email, password) {
         try {
-            if (req.query.hasOwnProperty('_sort')) {
-                const {column, type} = req.query
-                return await Account.findAll({
-                    order: [[column, type]],
-                });
-            }
-            return await Account.findAll();;
-        } catch (err) {
-            console.log('Db not connected successfully', err);
-            throw err;
-        }
-    }
-
-
-    async isValidUser(username, password) {
-        try {
-            const users = await Account.findAll({
+            const users = await Account.findOne({
+                include: [{
+                    model: Student
+                }],
                 where: {
-                    username: username,
+                    email: email,
                     password: password
                 }
             });
-            if (users.length > 0) {
-                return { valid: true, role: users.roleId };
+            console.log(users);
+            if (users) {
+                const role = await Role.findByPk(users.roleId)
+                return { valid: true, role: role.roleName};
             } else {
                 return { valid: false };
             }

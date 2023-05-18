@@ -8,22 +8,15 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             autoIncrement: true
         },
-        firstName: {
+        name: {
             type: DataTypes.STRING,
             allowNull: false,
             validate: {
                 notEmpty: true
             }
         },
-        lastName: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                notEmpty: true,
-            }
-        },
-        dob: {
-            type: DataTypes.DATE,
+        birthday: {
+            type: DataTypes.DATEONLY,
             allowNull: false,
             validate: {
                 notEmpty: true,
@@ -37,15 +30,18 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        email: {
+        phone: {
             type: DataTypes.STRING,
-            allowNull: false,
+            unique: true,
+            validate: {
+                len: [10, 11]
+            }
         }
     }, {
         sequelize,
         timestamps: false
     });
-    
+
     Student.associate = models => {
         Student.hasMany(models.StudentClasses, { foreignKey: 'studentId' });
         Student.hasOne(models.Account, { foreignKey: 'studentId' });
