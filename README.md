@@ -1,7 +1,8 @@
 # Run Project
 1. Vào thư mục sql, lấy file script.sql và chạy file trên MySql
 2. Mở thư mục project, chạy lệnh `npm i` trong Terminal để cài đặt project
-3. Chạy lệnh `npm start` trong Terminal để chạy project
+3. Thay đổi kết nối database trong config (xem Database connect ở dưới)
+4. Chạy lệnh `npm start` trong Terminal để chạy project
 
 # Port
 1. Project đang chạy ở port 3000
