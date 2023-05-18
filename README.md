@@ -12,8 +12,8 @@
 2. Chỉnh sửa kết nối: vào thư mục config, mở config,json
 
 Ví dụ:
-"username": "root",               //User connection
-"password": "admin123",           //Mật khẩu user connection
-"database": "student_management", //Tên database
-"host": "127.0.0.1",              //port, ở đây là port của localhost
-"dialect": "mysql"                //có thể thay đối thành các db server khác nhưng project sẽ phải cài thêm thư viện hỗ trợ
+1. "username": "root",               //User connection, mặc định mysql là root
+2. "password": "admin123",           //Mật khẩu user connection
+3. "database": "student_management", //Tên database
+4. "host": "127.0.0.1",              //port, ở đây là port của localhost
+5. "dialect": "mysql"                //có thể thay đối thành các db server khác nhưng project sẽ phải cài thêm thư viện hỗ trợ
