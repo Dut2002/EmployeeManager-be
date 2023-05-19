@@ -1,5 +1,5 @@
 const db = require('../models/index');
-const { Account, Student } = require('../models');
+const { Account, Student, Role } = require('../models');
 
 class RegisteController {
 
@@ -35,25 +35,31 @@ class RegisteController {
                 t = await db.sequelize.transaction();
 
                 // Create student and Account
+                const role = await Role.findOne({
+                    where: {
+                        roleName: 'Student'
+                    }
+                });
+
+                const newAccount = await Account.create({
+                    email: account.email,
+                    password: account.password,
+                    roleId: role.roleId,
+                }, { transaction: t });
+
                 const newStudent = await Student.create({
                     name: student.name,
                     birthday: new Date(student.birthday),
                     gender: student.gender,
                     address: student.address,
-                    phone: student.phone
-                }, { transaction: t });
-
-                const newAccount = await Account.create({
-                    email: account.email,
-                    password: account.password,
-                    roleId: 3,
-                    studentId: newStudent.studentId
+                    phone: student.phone,
+                    email: account.email
                 }, { transaction: t });
 
                 await t.commit(); // Commit the transaction
 
-                console.log('Student created successfully:', newStudent);
                 console.log('Account created successfully:', newAccount);
+                console.log('Student created successfully:', newStudent);
                 return res.json({ message: 'Signup new Student Account successfully' });
             }
 

@@ -38,15 +38,19 @@ module.exports = (sequelize, DataTypes) => {
         },
         email: {
             type: DataTypes.STRING,
+            unique: true,
             allowNull: false,
+            validate: {
+                isEmail: true
+            }
         }
     }, {
         sequelize,
         timestamps: false
     });
-    
+
     Teacher.associate = models => {
-        Teacher.hasOne(models.Account, { foreignKey: 'teacherId' });
+        Teacher.belongsTo(models.Account, { foreignKey: 'email' });
     };
 
     return Teacher;

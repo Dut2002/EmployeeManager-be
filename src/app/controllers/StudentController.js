@@ -1,4 +1,4 @@
-const { Student, Account } = require('../models');
+const { Student, Account, Role } = require('../models');
 const db = require('../models/index');
 
 class StudentController {
@@ -10,20 +10,19 @@ class StudentController {
       //Sort (option)
       if (req.query.hasOwnProperty('_sort')) {
         const { column, type } = req.query
-        listStudent = await Account.findAll({
+        listStudent = await Student.findAll({
           include: [{
-            model: Student
+            model: Account,
+            attributes: ['actived']
           }],
-          attributes: ['email'],
           order: db.Sequelize.literal(`${column} ${type}`)
         });
       } else {
-        listStudent = await Account.findAll({
+        listStudent = await Student.findAll({
           include: [{
-            model: Student
+            model: Account,
+            attributes: ['actived']
           }],
-          attributes: ['email'],
-          order: [[Student, 'studentId', 'ASC']]
         });
       }
 
@@ -42,14 +41,14 @@ class StudentController {
   async getStudent(req, res) {
     try {
       const { studentId } = req.query;
-      const student = await Account.findOne({
+      const student = await Student.findOne({
         include: [{
-          model: Student,
-          where: {
-            studentId: studentId
-          }
+          model: Account,
+          attributes: ['actived']
         }],
-        attributes: ['email'],
+        where: {
+          studentId: studentId
+        }
       });
       if (student) {
         return res.json(student);
@@ -66,12 +65,12 @@ class StudentController {
   async createStudent(req, res) {
     let t = null;
     try {
-      const { email, student } = req.body;
+      const { student } = req.body;
 
       // Check email
-      const existingAccount = await Account.findByPk(email);
+      const existingAccount = await Account.findByPk(student.email);
       if (existingAccount) {
-        return res.status(400).json({ error: 'Email already exists' });
+        return res.status(400).json({ error: 'Email already in use' });
       }
 
       // Check phone
@@ -81,31 +80,37 @@ class StudentController {
         }
       });
       if (existingStudent) {
-        return res.status(400).json({ error: 'Phone number already exists' });
+        return res.status(400).json({ error: 'Phone number already in use' });
       }
 
       t = await db.sequelize.transaction();
 
       // Create student and Account
+      const role = await Role.findOne({
+        where: {
+          roleName: 'Student'
+        },
+        attributes: ['roleId']
+      });
+      const newAccount = await Account.create({
+        email: student.email,
+        password: '123',
+        roleId: role.roleId,
+      }, { transaction: t });
+      
       const newStudent = await Student.create({
         name: student.name,
         birthday: new Date(student.birthday),
         gender: student.gender,
         address: student.address,
-        phone: student.phone
-      }, { transaction: t });
-
-      const newAccount = await Account.create({
-        email: email,
-        password: '123',
-        roleId: 3,
-        studentId: newStudent.studentId
+        phone: student.phone,
+        email: student.email
       }, { transaction: t });
 
       await t.commit(); // Commit the transaction
 
-      console.log('Student created successfully:', newStudent);
       console.log('Account created successfully:', newAccount);
+      console.log('Student created successfully:', newStudent);
       return res.json({ message: 'Create new student successfully!' });
     } catch (error) {
       console.error('Error creating student:', error);
@@ -118,42 +123,43 @@ class StudentController {
   async updateStudent(req, res) {
     let t = null;
     try {
-      const { studentId, email, student } = req.body;
+      const { student, actived } = req.body;
 
-      const existingStudent = await Student.findByPk(studentId);
+      const existingStudent = await Student.findByPk(student.studentId);
       if (!existingStudent) {
         // Not found
         return res.json({ message: 'Student is not exists!!' })
       } else {
 
         // Check email and phone
-        const checkResults = await Account.findAll({
+        const checkResults = await Student.findAll({
           include: [{
-            model: Student
+            model: Account,
+            attributes: ['actived']
           }],
-          attributes: ['email'],
           where: {
             [db.Sequelize.Op.or]: [
-              { email: email },
-              { '$Student.phone$': student.phone }
+              { email: student.email },
+              { phone: student.phone }
             ],
-            '$Student.studentId$': { [db.Sequelize.Op.not]: studentId }
+            studentId: { [db.Sequelize.Op.not]: student.studentId }
           }
         });
         if (checkResults.length > 0) {
           // Not found
-          return res.json({ message: 'Email or Phone number already exists' })
+          return res.json({ message: 'Email or phone number already in use' })
         }
 
         t = await db.sequelize.transaction();
-        const resultStudent = await Student.update(student, {
-          where: { studentId: studentId }
-        }, { transaction: t });
-
         const resultAccount = await Account.update({
-          email: email
+          email: student.email,
+          actived: actived
         }, {
-          where: { studentId: studentId }
+          where: { email: existingStudent.email }
+        }, { transaction: t });
+        
+        const resultStudent = await Student.update(student, {
+          where: { studentId: student.studentId }
         }, { transaction: t });
 
         await t.commit(); // Commit the transaction
@@ -175,20 +181,33 @@ class StudentController {
     let t = null;
     try {
       const { studentId } = req.query;
+      const deletedStudent = await Student.findOne({
+        where: {
+          studentId: studentId
+        }
+      });
+
+      if(!deletedStudent){
+        return res.json({ message: 'Student is not exists!!' });
+      }
 
       t = await db.sequelize.transaction();
-      const resultAccount = await Account.destroy({
-        where: { studentId: studentId }
-      }, { transaction: t });
+      
       const resultStudent = await Student.destroy({
         where: { studentId: studentId }
       }, { transaction: t });
+
+      const resultAccount = await Account.destroy({
+        where: { email: deletedStudent.email }
+      }, { transaction: t });
+      
       await t.commit(); // Commit the transaction
 
       if (resultStudent === 1 || resultAccount === 1) {
         return res.json({ message: 'Student deleted successfully' });
       } else {
-        return res.json({ message: 'Student is not exists!!' })
+        t.rollback();
+        return res.json({ message: 'Unable to delete student and account!!' })
       }
 
     } catch (error) {

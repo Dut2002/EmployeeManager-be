@@ -25,20 +25,16 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false
         },
-        studentId: {
-            type: DataTypes.INTEGER,
-        },
-        teacherId: {
-            type: DataTypes.INTEGER,
-        },
     }, {
         sequelize,
         timestamps: false
     });
 
     Account.associate = models => {
-        Account.belongsTo(models.Student, { foreignKey: 'studentId' });
-        Account.belongsTo(models.Teacher, { foreignKey: 'teacherId' });
+        Account.hasOne(models.Student, { foreignKey: 'email' });
+        Account.hasOne(models.Teacher, { foreignKey: 'email' });
+        // Account.belongsTo(models.Student, { foreignKey: 'studentId' });
+        // Account.belongsTo(models.Teacher, { foreignKey: 'teacherId' });
     };
     return Account;
 }

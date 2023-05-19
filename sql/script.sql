@@ -18,6 +18,10 @@
 --
 -- Table structure for table `accounts`
 --
+DROP DATABASE IF EXISTS `student_management`;
+CREATE DATABASE `student_management`;
+USE `student_management`;
+
 
 DROP TABLE IF EXISTS `accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -59,7 +63,7 @@ DROP TABLE IF EXISTS `classes`;
 CREATE TABLE `classes` (
   `classId` int NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
-  `grade` tinyint NOT NULL,
+  `grade` smallint NOT NULL,
   `schoolYear` int NOT NULL,
   PRIMARY KEY (`classId`),
   UNIQUE KEY `classId` (`classId`)

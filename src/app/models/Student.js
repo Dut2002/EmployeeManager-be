@@ -36,6 +36,14 @@ module.exports = (sequelize, DataTypes) => {
             validate: {
                 len: [10, 11]
             }
+        },
+        email:{
+            type: DataTypes.STRING,
+            unique: true,
+            allowNull: false,
+            validate: {
+                isEmail: true
+            }
         }
     }, {
         sequelize,
@@ -44,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Student.associate = models => {
         Student.hasMany(models.StudentClasses, { foreignKey: 'studentId' });
-        Student.hasOne(models.Account, { foreignKey: 'studentId' });
+        Student.belongsTo(models.Account, { foreignKey: 'email' });
     };
 
     return Student;
