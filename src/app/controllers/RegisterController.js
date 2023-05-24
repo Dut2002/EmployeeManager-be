@@ -38,7 +38,8 @@ class RegisteController {
                 const role = await Role.findOne({
                     where: {
                         roleName: 'Student'
-                    }
+                    },
+                    attributes: ['roleId']
                 });
 
                 const newAccount = await Account.create({

@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `student_management` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `student_management`;
 -- MySQL dump 10.13  Distrib 8.0.33, for Win64 (x86_64)
 --
 -- Host: localhost    Database: student_management
@@ -18,10 +20,6 @@
 --
 -- Table structure for table `accounts`
 --
-DROP DATABASE IF EXISTS `student_management`;
-CREATE DATABASE `student_management`;
-USE `student_management`;
-
 
 DROP TABLE IF EXISTS `accounts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -31,16 +29,10 @@ CREATE TABLE `accounts` (
   `password` varchar(255) NOT NULL,
   `actived` tinyint(1) NOT NULL DEFAULT '1',
   `roleId` int NOT NULL,
-  `studentId` int DEFAULT NULL,
-  `teacherId` int DEFAULT NULL,
   PRIMARY KEY (`email`),
   UNIQUE KEY `email` (`email`),
   KEY `roleId` (`roleId`),
-  KEY `studentId` (`studentId`),
-  KEY `teacherId` (`teacherId`),
-  CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`roleId`) REFERENCES `roles` (`roleId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `accounts_ibfk_2` FOREIGN KEY (`studentId`) REFERENCES `students` (`studentId`) ON UPDATE CASCADE,
-  CONSTRAINT `accounts_ibfk_3` FOREIGN KEY (`teacherId`) REFERENCES `teachers` (`teacherId`) ON UPDATE CASCADE
+  CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`roleId`) REFERENCES `roles` (`roleId`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -145,9 +137,12 @@ CREATE TABLE `students` (
   `gender` tinyint(1) NOT NULL,
   `address` varchar(255) NOT NULL,
   `phone` varchar(255) DEFAULT NULL,
+  `email` varchar(255) NOT NULL,
   PRIMARY KEY (`studentId`),
   UNIQUE KEY `studentId` (`studentId`),
-  UNIQUE KEY `phone` (`phone`)
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `phone` (`phone`),
+  CONSTRAINT `students_ibfk_1` FOREIGN KEY (`email`) REFERENCES `accounts` (`email`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -176,7 +171,9 @@ CREATE TABLE `teachers` (
   `address` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   PRIMARY KEY (`teacherId`),
-  UNIQUE KEY `teacherId` (`teacherId`)
+  UNIQUE KEY `teacherId` (`teacherId`),
+  UNIQUE KEY `email` (`email`),
+  CONSTRAINT `teachers_ibfk_1` FOREIGN KEY (`email`) REFERENCES `accounts` (`email`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -198,4 +195,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-05-18 13:35:18
+-- Dump completed on 2023-05-22 13:38:19
