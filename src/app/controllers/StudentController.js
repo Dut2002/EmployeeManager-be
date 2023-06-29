@@ -25,15 +25,10 @@ class StudentController {
           }],
         });
       }
-
-      if (listStudent.length > 0) {
-        return res.json(listStudent);
-      } else {
-        return res.json({ message: 'No result' });
-      }
+      return res.json(listStudent);
     } catch (error) {
       console.error('Error viewing student:', error);
-      return res.status(500).json({ error: 'Server error' });
+      return res.status(500).send('Server error');
     }
   }
 
@@ -53,11 +48,11 @@ class StudentController {
       if (student) {
         return res.json(student);
       } else {
-        return res.json({ error: 'Student is not exists!!' })
+        return res.status(404).send('Student is not exists!!');
       }
     } catch (error) {
       console.error('Error getting student:', error);
-      return res.status(500).json({ error: 'Server error' });
+      return res.status(500).send('Server error');
     }
   }
 
@@ -70,7 +65,7 @@ class StudentController {
       // Check email
       const existingAccount = await Account.findByPk(student.email);
       if (existingAccount) {
-        return res.status(400).json({ error: 'Email already in use' });
+        return res.status(409).send('Email already in use');
       }
 
       // Check phone
@@ -80,7 +75,7 @@ class StudentController {
         }
       });
       if (existingStudent) {
-        return res.status(400).json({ error: 'Phone number already in use' });
+        return res.status(409).send('Phone number already in use');
       }
 
       t = await db.sequelize.transaction();
@@ -97,7 +92,7 @@ class StudentController {
         password: '123',
         roleId: role.roleId,
       }, { transaction: t });
-      
+
       const newStudent = await Student.create({
         name: student.name,
         birthday: new Date(student.birthday),
@@ -111,11 +106,11 @@ class StudentController {
 
       console.log('Account created successfully:', newAccount);
       console.log('Student created successfully:', newStudent);
-      return res.json({ message: 'Create new student successfully!' });
+      return res.json({ status: true, message: 'Create new student successfully!' });
     } catch (error) {
       console.error('Error creating student:', error);
       if (t) await t.rollback();
-      return res.status(500).json({ error: 'Server error' });
+      return res.status(500).send('Server error');
     }
   }
 
@@ -128,7 +123,7 @@ class StudentController {
       const existingStudent = await Student.findByPk(student.studentId);
       if (!existingStudent) {
         // Not found
-        return res.json({ message: 'Student is not exists!!' })
+        return res.status(404).send('Student is not exists!!')
       } else {
 
         // Check email and phone
@@ -147,7 +142,7 @@ class StudentController {
         });
         if (checkResults.length > 0) {
           // Not found
-          return res.json({ message: 'Email or phone number already in use' })
+          return res.status(409).send('Email or phone number already in use');
         }
 
         t = await db.sequelize.transaction();
@@ -157,7 +152,7 @@ class StudentController {
         }, {
           where: { email: existingStudent.email }
         }, { transaction: t });
-        
+
         const resultStudent = await Student.update(student, {
           where: { studentId: student.studentId }
         }, { transaction: t });
@@ -165,14 +160,14 @@ class StudentController {
         await t.commit(); // Commit the transaction
 
         if (resultStudent[0] === 1 || resultAccount[0] === 1) {
-          return res.json({ message: 'Student updated successfully' });
+          return res.json({ status: true, message: 'Student updated successfully' });
         } else {
-          return res.json({ message: 'No changes detected!' })
+          return res.status(500).send('No changes detected!');
         }
       }
     } catch (error) {
       console.error('Error updating student:', error);
-      return res.status(500).json({ error: 'Server error' });
+      return res.status(500).send('Server error');
     }
   }
 
@@ -187,12 +182,12 @@ class StudentController {
         }
       });
 
-      if(!deletedStudent){
-        return res.json({ message: 'Student is not exists!!' });
+      if (!deletedStudent) {
+        return res.status(404).send('Student is not exists!!');
       }
 
       t = await db.sequelize.transaction();
-      
+
       const resultStudent = await Student.destroy({
         where: { studentId: studentId }
       }, { transaction: t });
@@ -200,20 +195,20 @@ class StudentController {
       const resultAccount = await Account.destroy({
         where: { email: deletedStudent.email }
       }, { transaction: t });
-      
+
       await t.commit(); // Commit the transaction
 
       if (resultStudent === 1 || resultAccount === 1) {
-        return res.json({ message: 'Student deleted successfully' });
+        return res.json({status:true,message:'Student deleted successfully'});
       } else {
         t.rollback();
-        return res.json({ message: 'Unable to delete student and account!!' })
+        return res.status(500).send('Unable to delete student and account!!');
       }
 
     } catch (error) {
       console.error('Error deleting student:', error);
       if (t) t.rollback();
-      return res.status(500).json({ error: 'Server error' });
+      return res.status(500).send('Server error');
     }
   }
 }

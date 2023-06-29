@@ -3,9 +3,8 @@ const { Account, Student, Role } = require('../models');
 
 class RegisteController {
 
-    //[Get] /
-    index(req, res) {
-        res.status(200).send('register');
+    async index(req, res) {
+        res.send('register');
     }
 
     //[Post] /
@@ -15,12 +14,12 @@ class RegisteController {
             const { account, repassword, student } = req.body;
             console.log(account.password, " ", repassword);
             if (account.password !== repassword) {
-                return res.json({ error: 'Password and Repassword do not match' });
+                return res.status(400).send('Password and Repassword do not match');
             } else {
                 // Check email
                 const existingAccount = await Account.findByPk(account.email);
                 if (existingAccount) {
-                    return res.status(400).json({ error: 'Email already exists' });
+                    return res.status(400).send('Email already exists');
                 }
                 // Check phone
                 const existingStudent = await Student.findOne({
@@ -29,7 +28,7 @@ class RegisteController {
                     }
                 });
                 if (existingStudent) {
-                    return res.status(400).json({ error: 'Phone number already exists' });
+                    return res.status(400).send('Phone number already exists');
                 }
 
                 t = await db.sequelize.transaction();
@@ -61,13 +60,14 @@ class RegisteController {
 
                 console.log('Account created successfully:', newAccount);
                 console.log('Student created successfully:', newStudent);
-                return res.json({ message: 'Signup new Student Account successfully' });
+                const message = 'Signup new Student Account successfully';
+                return res.json({status: true , message});
             }
 
         } catch (error) {
             console.error('Error register:', error);
             if (t) await t.rollback();
-            return res.status(500).json({ error: 'Server error' });
+            return res.status(500).send('Server error');
         }
     }
 }
